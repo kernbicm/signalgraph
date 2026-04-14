@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GraphDocument",
+  "type": "object",
+  "required": ["schema_version", "id", "name", "created_at", "updated_at", "nodes", "edges"],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "description": { "type": ["string", "null"] },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "config"],
+        "properties": {
+          "id": { "type": "string" },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "constant",
+              "tracker_signal",
+              "map_range",
+              "clamp",
+              "invert",
+              "add",
+              "multiply",
+              "smooth",
+              "deadzone",
+              "threshold",
+              "debug_meter",
+              "osc_out"
+            ]
+          },
+          "label": { "type": ["string", "null"] },
+          "config": { "type": "object" },
+          "position": {
+            "type": ["array", "null"],
+            "items": { "type": "number" },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "source", "source_port", "target", "target_port"],
+        "properties": {
+          "id": { "type": "string" },
+          "source": { "type": "string" },
+          "source_port": { "type": "string" },
+          "target": { "type": "string" },
+          "target_port": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TelemetryFrame",
+  "type": "object",
+  "required": ["schema_version", "source", "monotonic_ms", "signals"],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "source": { "type": "string" },
+    "monotonic_ms": { "type": "integer", "minimum": 0 },
+    "signals": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/signal_value" }
+    }
+  },
+  "$defs": {
+    "signal_value": {
+      "oneOf": [
+        { "type": "object", "required": ["kind", "value"], "properties": { "kind": { "const": "float" }, "value": { "type": "number" } } },
+        { "type": "object", "required": ["kind", "value"], "properties": { "kind": { "const": "int" }, "value": { "type": "integer" } } },
+        { "type": "object", "required": ["kind", "value"], "properties": { "kind": { "const": "bool" }, "value": { "type": "boolean" } } },
+        { "type": "object", "required": ["kind", "value"], "properties": { "kind": { "const": "category" }, "value": { "type": "string" } } },
+        { "type": "object", "required": ["kind", "value"], "properties": { "kind": { "const": "vec2" }, "value": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 } } },
+        { "type": "object", "required": ["kind", "value"], "properties": { "kind": { "const": "vec3" }, "value": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 } } },
+        { "type": "object", "required": ["kind"], "properties": { "kind": { "const": "missing" } } }
+      ]
+    }
+  }
+}
