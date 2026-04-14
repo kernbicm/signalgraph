@@ -70,10 +70,10 @@ textarea:focus {
 }
 
 .app-header {
-  padding: 10px 16px;
+  padding: 8px 16px;
   display: flex;
-  align-items: baseline;
-  gap: 12px;
+  align-items: center;
+  gap: 16px;
   border-bottom: 1px solid var(--border);
   background: var(--bg-panel);
 }
@@ -89,30 +89,157 @@ textarea:focus {
   font-size: 12px;
 }
 
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
+}
+
+.tab-button {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--fg-muted);
+  padding: 4px 12px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+.tab-button:hover {
+  color: var(--fg);
+}
+
+.tab-button.tab-active {
+  background: var(--bg-panel-2);
+  border-color: var(--border);
+  color: var(--fg);
+}
+
+.header-status {
+  margin-left: auto;
+}
+
+.status-compact {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .app-main {
   flex: 1;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
   padding: 12px;
+  min-height: 0;
 }
 
-.phase1-lab {
-  grid-template-columns: 280px 1fr;
+.tracking-lab {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(360px, 1.4fr) 320px 320px;
   grid-template-rows: auto auto 1fr;
   grid-template-areas:
-    "runtime source"
-    "loopback source"
-    "loopback source";
+    "preview tracker mapping"
+    "preview sources mapping"
+    "loopback sources mapping";
+  flex: 1;
+  min-height: 0;
 }
 
-.phase1-lab .panel:nth-child(1) {
-  grid-area: runtime;
+.panel-preview { grid-area: preview; }
+.panel-tracker { grid-area: tracker; }
+.panel-sources { grid-area: sources; min-height: 0; }
+.panel-mapping { grid-area: mapping; }
+.panel-loopback { grid-area: loopback; }
+
+.empty-view {
+  flex: 1;
+  justify-content: center;
+  align-items: center;
 }
-.phase1-lab .panel:nth-child(2) {
-  grid-area: loopback;
+
+.camera-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
 }
-.phase1-lab .panel:nth-child(3) {
-  grid-area: source;
+
+.preview-video-wrapper {
+  position: relative;
+  background: black;
+  border-radius: 4px;
+  overflow: hidden;
+  flex: 1;
+  min-height: 240px;
+}
+
+.preview-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.permission-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--fg);
+}
+
+.preview-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.preview-controls label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+
+.hardcoded-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+
+.field input,
+.field select {
+  font-size: 12px;
+  color: var(--fg);
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.tracker-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .panel {

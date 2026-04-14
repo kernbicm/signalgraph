@@ -1,7 +1,11 @@
 import { useAppStore } from "../lib/store";
 import { api } from "../lib/tauri";
 
-export function StatusPanel() {
+interface Props {
+  compact?: boolean;
+}
+
+export function StatusPanel({ compact = false }: Props) {
   const status = useAppStore((s) => s.status);
   const tick = useAppStore((s) => s.tick);
 
@@ -17,6 +21,19 @@ export function StatusPanel() {
   }[status.worker_state];
 
   const sourceBadge = status.source_mode === "fake" ? "badge warn" : "badge ok";
+
+  if (compact) {
+    return (
+      <div className="status-compact">
+        <span className={badgeClass}>worker {status.worker_state}</span>
+        <span className={sourceBadge}>source {status.source_mode}</span>
+        <span className="muted small">{status.signals_count} signals</span>
+        {status.last_error ? (
+          <span className="badge err">{status.last_error}</span>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div className="status-grid">

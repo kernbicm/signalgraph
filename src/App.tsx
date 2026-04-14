@@ -1,12 +1,16 @@
-import { useEffect } from "react";
-import { StatusPanel } from "./components/StatusPanel";
-import { SourceExplorer } from "./components/SourceExplorer";
-import { OscLoopbackPanel } from "./components/OscLoopbackPanel";
+import { useEffect, useState } from "react";
+import { TrackingLab } from "./views/TrackingLab";
+import { PatchEditor } from "./views/PatchEditor";
+import { PacketMonitor } from "./views/PacketMonitor";
 import { startPolling, useAppStore } from "./lib/store";
 import { isTauri } from "./lib/tauri";
+import { StatusPanel } from "./components/StatusPanel";
+
+type Tab = "lab" | "editor" | "monitor";
 
 export function App() {
   const tick = useAppStore((s) => s.tick);
+  const [tab, setTab] = useState<Tab>("lab");
 
   useEffect(() => {
     if (!isTauri()) return;
@@ -20,21 +24,47 @@ export function App() {
       <header className="app-header">
         <h1>SignalGraph</h1>
         <span className="header-sub">camera → MediaPipe → signal → graph → OSC</span>
+        <nav className="tabs">
+          <TabButton label="Lab" active={tab === "lab"} onClick={() => setTab("lab")} />
+          <TabButton
+            label="Editor"
+            active={tab === "editor"}
+            onClick={() => setTab("editor")}
+          />
+          <TabButton
+            label="Monitor"
+            active={tab === "monitor"}
+            onClick={() => setTab("monitor")}
+          />
+        </nav>
+        <div className="header-status">
+          <StatusPanel compact />
+        </div>
       </header>
-      <main className="app-main phase1-lab">
-        <section className="panel">
-          <h2>Runtime</h2>
-          <StatusPanel />
-        </section>
-        <section className="panel">
-          <h2>OSC loopback</h2>
-          <OscLoopbackPanel />
-        </section>
-        <section className="panel source-panel">
-          <h2>Source explorer</h2>
-          <SourceExplorer />
-        </section>
+      <main className="app-main">
+        {tab === "lab" ? <TrackingLab /> : null}
+        {tab === "editor" ? <PatchEditor /> : null}
+        {tab === "monitor" ? <PacketMonitor /> : null}
       </main>
     </div>
+  );
+}
+
+function TabButton({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      className={`tab-button ${active ? "tab-active" : ""}`}
+      onClick={onClick}
+    >
+      {label}
+    </button>
   );
 }
