@@ -1,0 +1,6 @@
+{"schema_version":1,"source":"fixture.gesture","monotonic_ms":0,"signals":{"mp.hand.left.gesture.score":{"kind":"float","value":0.10},"mp.hand.left.gesture.category":{"kind":"category","value":"closed"}}}
+{"schema_version":1,"source":"fixture.gesture","monotonic_ms":100,"signals":{"mp.hand.left.gesture.score":{"kind":"float","value":0.30},"mp.hand.left.gesture.category":{"kind":"category","value":"closed"}}}
+{"schema_version":1,"source":"fixture.gesture","monotonic_ms":200,"signals":{"mp.hand.left.gesture.score":{"kind":"float","value":0.55},"mp.hand.left.gesture.category":{"kind":"category","value":"open"}}}
+{"schema_version":1,"source":"fixture.gesture","monotonic_ms":300,"signals":{"mp.hand.left.gesture.score":{"kind":"float","value":0.85},"mp.hand.left.gesture.category":{"kind":"category","value":"open"}}}
+{"schema_version":1,"source":"fixture.gesture","monotonic_ms":400,"signals":{"mp.hand.left.gesture.score":{"kind":"float","value":0.95},"mp.hand.left.gesture.category":{"kind":"category","value":"open"}}}
+{"schema_version":1,"source":"fixture.gesture","monotonic_ms":500,"signals":{"mp.hand.left.gesture.score":{"kind":"float","value":0.45},"mp.hand.left.gesture.category":{"kind":"category","value":"closed"}}}
