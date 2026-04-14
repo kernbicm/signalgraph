@@ -255,6 +255,11 @@ impl OscOutSink {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::signals::SignalBus;
+
+    fn outputs(pairs: &[(&str, Value)]) -> BTreeMap<String, Value> {
+        pairs.iter().map(|(k, v)| (k.to_string(), v.clone())).collect()
+    }
 
     #[test]
     fn map_range_basic() {
@@ -262,5 +267,174 @@ mod tests {
         assert_eq!(map_range(0.25, 0.0, 1.0, 0.0, 100.0, false, true), 75.0);
         assert_eq!(map_range(-1.0, 0.0, 1.0, 0.0, 100.0, true, false), 0.0);
         assert_eq!(map_range(2.0, 0.0, 1.0, 0.0, 100.0, true, false), 100.0);
+    }
+
+    #[test]
+    fn map_range_zero_span_returns_out_min() {
+        assert_eq!(map_range(0.5, 1.0, 1.0, 3.0, 7.0, false, false), 3.0);
+    }
+
+    #[test]
+    fn constant_node_outputs_its_value() {
+        let mut n = CompiledNode::Constant(Constant { value: 42.5 });
+        let bus = SignalBus::new();
+        let v = n.evaluate(&bus, &outputs(&[]), 0).unwrap();
+        assert_eq!(v.as_float(), Some(42.5));
+    }
+
+    #[test]
+    fn clamp_node_clamps() {
+        let mut n = CompiledNode::Clamp(Clamp {
+            input: "src".into(),
+            min: 0.0,
+            max: 1.0,
+        });
+        let bus = SignalBus::new();
+        let out_low = n
+            .evaluate(&bus, &outputs(&[("src", Value::Float(-5.0))]), 0)
+            .unwrap();
+        assert_eq!(out_low.as_float(), Some(0.0));
+        let out_high = n
+            .evaluate(&bus, &outputs(&[("src", Value::Float(5.0))]), 0)
+            .unwrap();
+        assert_eq!(out_high.as_float(), Some(1.0));
+        let out_mid = n
+            .evaluate(&bus, &outputs(&[("src", Value::Float(0.5))]), 0)
+            .unwrap();
+        assert_eq!(out_mid.as_float(), Some(0.5));
+    }
+
+    #[test]
+    fn invert_node_mirrors() {
+        let mut n = CompiledNode::Invert(Invert {
+            input: "src".into(),
+            min: 0.0,
+            max: 1.0,
+        });
+        let bus = SignalBus::new();
+        let v = n
+            .evaluate(&bus, &outputs(&[("src", Value::Float(0.2))]), 0)
+            .unwrap();
+        assert_eq!(v.as_float(), Some(0.8));
+    }
+
+    #[test]
+    fn binary_ops_work() {
+        let mut add = CompiledNode::Add(BinaryOp {
+            a: "a".into(),
+            b: "b".into(),
+        });
+        let mut mul = CompiledNode::Multiply(BinaryOp {
+            a: "a".into(),
+            b: "b".into(),
+        });
+        let bus = SignalBus::new();
+        let ctx = outputs(&[("a", Value::Float(3.0)), ("b", Value::Float(4.0))]);
+        assert_eq!(add.evaluate(&bus, &ctx, 0).unwrap().as_float(), Some(7.0));
+        assert_eq!(mul.evaluate(&bus, &ctx, 0).unwrap().as_float(), Some(12.0));
+    }
+
+    #[test]
+    fn smooth_node_low_pass() {
+        let mut n = CompiledNode::Smooth(Smooth {
+            input: "src".into(),
+            alpha: 0.5,
+            state: None,
+        });
+        let bus = SignalBus::new();
+        // First sample initializes state to input
+        let v1 = n
+            .evaluate(&bus, &outputs(&[("src", Value::Float(1.0))]), 0)
+            .unwrap();
+        assert_eq!(v1.as_float(), Some(1.0));
+        // Sudden drop to 0.0 with alpha=0.5 -> halfway
+        let v2 = n
+            .evaluate(&bus, &outputs(&[("src", Value::Float(0.0))]), 0)
+            .unwrap();
+        assert_eq!(v2.as_float(), Some(0.5));
+        // Stay at 0.0 -> 0.25
+        let v3 = n
+            .evaluate(&bus, &outputs(&[("src", Value::Float(0.0))]), 0)
+            .unwrap();
+        assert_eq!(v3.as_float(), Some(0.25));
+    }
+
+    #[test]
+    fn deadzone_snaps_near_center() {
+        let mut n = CompiledNode::Deadzone(Deadzone {
+            input: "src".into(),
+            center: 0.5,
+            radius: 0.1,
+        });
+        let bus = SignalBus::new();
+        let inside = n
+            .evaluate(&bus, &outputs(&[("src", Value::Float(0.55))]), 0)
+            .unwrap();
+        assert_eq!(inside.as_float(), Some(0.5));
+        let outside = n
+            .evaluate(&bus, &outputs(&[("src", Value::Float(0.8))]), 0)
+            .unwrap();
+        assert_eq!(outside.as_float(), Some(0.8));
+    }
+
+    #[test]
+    fn threshold_node_emits_bool() {
+        let mut n = CompiledNode::Threshold(Threshold {
+            input: "src".into(),
+            threshold: 0.5,
+        });
+        let bus = SignalBus::new();
+        let low = n
+            .evaluate(&bus, &outputs(&[("src", Value::Float(0.4))]), 0)
+            .unwrap();
+        assert!(matches!(low, Value::Bool(false)));
+        let high = n
+            .evaluate(&bus, &outputs(&[("src", Value::Float(0.7))]), 0)
+            .unwrap();
+        assert!(matches!(high, Value::Bool(true)));
+    }
+
+    #[test]
+    fn osc_out_sink_payload_types() {
+        use crate::contracts::OscTarget;
+        let sink = OscOutSink {
+            input: "src".into(),
+            label: "l".into(),
+            target: OscTarget {
+                host: "127.0.0.1".into(),
+                port: 9000,
+                address: "/t".into(),
+            },
+            payload_type: "int".into(),
+            enabled: true,
+            last_value: None,
+        };
+        let out = sink
+            .materialize(&outputs(&[("src", Value::Float(3.7))]))
+            .unwrap();
+        match out.payload {
+            crate::contracts::OscPayload::Int(v) => assert_eq!(v, 3),
+            _ => panic!(),
+        }
+
+        let bool_sink = OscOutSink {
+            input: "src".into(),
+            label: "l".into(),
+            target: OscTarget {
+                host: "127.0.0.1".into(),
+                port: 9000,
+                address: "/t".into(),
+            },
+            payload_type: "bool".into(),
+            enabled: true,
+            last_value: None,
+        };
+        let out = bool_sink
+            .materialize(&outputs(&[("src", Value::Float(0.6))]))
+            .unwrap();
+        match out.payload {
+            crate::contracts::OscPayload::Bool(v) => assert!(v),
+            _ => panic!(),
+        }
     }
 }

@@ -7,6 +7,8 @@
 pub mod compile;
 pub mod nodes;
 pub mod patches;
+pub mod replay;
+pub mod starter;
 pub mod validate;
 
 use crate::contracts::{GraphDocument, RuntimeSnapshot, SinkSnapshot};
