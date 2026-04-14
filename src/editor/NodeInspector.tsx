@@ -1,6 +1,7 @@
 import { useEditorStore } from "./editorStore";
 import { NODE_SPECS } from "./nodeSpecs";
 import { useAppStore } from "../lib/store";
+import { CalibrationPanel } from "./CalibrationPanel";
 
 export function NodeInspector() {
   const selectedId = useEditorStore((s) => s.selectedNodeId);
@@ -186,6 +187,8 @@ export function NodeInspector() {
           </label>
         </>
       ) : null}
+
+      <CalibrationPanel />
     </div>
   );
 }

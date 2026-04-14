@@ -5,7 +5,6 @@ import {
   MiniMap,
   ReactFlow,
   ReactFlowProvider,
-  useReactFlow,
   type ReactFlowInstance,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -15,10 +14,12 @@ import { CustomNode } from "./CustomNode";
 import { NODE_ORDER } from "./nodeSpecs";
 import { useEditorStore } from "./editorStore";
 import { createStarterPatch } from "./starterPatch";
+import { TEMPLATES } from "./templates";
 import { api, isTauri } from "../lib/tauri";
 import { useAppStore } from "../lib/store";
 import type { NodeKind } from "./types";
 import type { PatchNode, PatchEdge } from "./types";
+import type { GraphDocument } from "../lib/types";
 
 const nodeTypes: Record<string, typeof CustomNode> = Object.fromEntries(
   NODE_ORDER.map((k) => [k, CustomNode]),
@@ -102,6 +103,75 @@ function PatchEditorInner() {
     loadFromDocument(createStarterPatch());
   };
 
+  const handleDuplicate = async () => {
+    setSaveStatus(null);
+    const doc = toDocument();
+    const suffix = new Date().toISOString().slice(11, 19).replace(/:/g, "");
+    const copy: GraphDocument = { ...doc, name: `${doc.name}_copy_${suffix}`, id: `${doc.id}_copy_${suffix}` };
+    try {
+      if (isTauri()) {
+        await api.savePatch(copy);
+        await refreshPatchList();
+      }
+      loadFromDocument(copy);
+      setSaveStatus(`duplicated as '${copy.name}'`);
+    } catch (e) {
+      setSaveStatus(`duplicate failed: ${e}`);
+    }
+  };
+
+  const handleDelete = async () => {
+    const name = useEditorStore.getState().patchName;
+    if (!name) return;
+    try {
+      if (isTauri()) {
+        await api.deletePatch(name);
+        await refreshPatchList();
+      }
+      reset();
+      setSaveStatus(`deleted '${name}'`);
+    } catch (e) {
+      setSaveStatus(`delete failed: ${e}`);
+    }
+  };
+
+  const handleExport = () => {
+    const doc = toDocument();
+    const text = JSON.stringify(doc, null, 2);
+    const blob = new Blob([text], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${doc.name}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = async (file: File) => {
+    setLoadError(null);
+    try {
+      const text = await file.text();
+      const doc = JSON.parse(text) as GraphDocument;
+      if (!doc.schema_version || !Array.isArray(doc.nodes)) {
+        throw new Error("file is not a valid patch document");
+      }
+      loadFromDocument(doc);
+      if (isTauri()) {
+        await api.savePatch(doc);
+        await refreshPatchList();
+      }
+      setSaveStatus(`imported '${doc.name}'`);
+    } catch (e) {
+      setLoadError(String(e));
+    }
+  };
+
+  const handleTemplate = (id: string) => {
+    const tpl = TEMPLATES.find((t) => t.id === id);
+    if (!tpl) return;
+    loadFromDocument(tpl.build());
+  };
+
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
@@ -138,10 +208,28 @@ function PatchEditorInner() {
             onChange={(e) => setPatchName(e.target.value)}
             placeholder="patch name"
           />
-          <button onClick={handleNewStarter}>starter patch</button>
           <button onClick={() => reset()}>new empty</button>
+          <button onClick={handleNewStarter}>starter</button>
+          <select
+            value=""
+            onChange={(e) => {
+              if (e.target.value) handleTemplate(e.target.value);
+              e.currentTarget.value = "";
+            }}
+          >
+            <option value="">templates…</option>
+            {TEMPLATES.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
+            ))}
+          </select>
           <button className="primary" onClick={handleSave}>
             save
+          </button>
+          <button onClick={handleDuplicate}>duplicate</button>
+          <button className="danger" onClick={handleDelete}>
+            delete
           </button>
           <select
             value=""
@@ -157,6 +245,19 @@ function PatchEditorInner() {
               </option>
             ))}
           </select>
+          <button onClick={handleExport}>export</button>
+          <label className="import-button">
+            import
+            <input
+              type="file"
+              accept="application/json"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) void handleImport(f);
+                e.currentTarget.value = "";
+              }}
+            />
+          </label>
           {saveStatus ? <span className="muted small">{saveStatus}</span> : null}
           {loadError ? <span className="err-row small">{loadError}</span> : null}
         </div>
