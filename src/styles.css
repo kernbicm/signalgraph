@@ -424,3 +424,268 @@ textarea:focus {
   padding: 12px;
   text-align: center;
 }
+
+/* ---------- Patch editor (Phase 3) ---------- */
+
+.patch-editor {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 220px 1fr 300px;
+  gap: 12px;
+  min-height: 0;
+}
+
+.palette-sidebar,
+.inspector-sidebar {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  overflow: auto;
+}
+
+.editor-center {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.editor-toolbar {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.editor-toolbar .patch-name {
+  flex: 0 1 160px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+.editor-toolbar button.primary {
+  background: rgba(96, 165, 250, 0.25);
+  border-color: var(--accent);
+  color: var(--fg);
+}
+
+.editor-toolbar button.danger {
+  color: var(--err);
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+.reactflow-wrapper {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.runtime-dock {
+  border-top: 1px solid var(--border);
+  padding: 6px 10px;
+  min-height: 24px;
+}
+
+.node-palette {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.palette-category h3 {
+  margin: 0 0 6px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fg-muted);
+}
+
+.palette-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.palette-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 6px 8px;
+  text-align: left;
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  cursor: grab;
+}
+
+.palette-item:hover {
+  border-color: var(--accent);
+}
+
+.palette-kind {
+  font-size: 9px;
+  color: var(--fg-muted);
+  font-family: ui-monospace, Menlo, monospace;
+  letter-spacing: 0.04em;
+}
+
+.palette-label {
+  font-size: 12px;
+}
+
+.inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inspector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.inspector-kind {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 10px;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+button.danger {
+  color: var(--err);
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+/* ---------- Custom nodes in the React Flow canvas ---------- */
+
+.react-flow__node {
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.patch-node {
+  min-width: 160px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--fg);
+  font-size: 11px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.patch-node.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.4);
+}
+
+.patch-node-header {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.patch-node-kind {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 9px;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.patch-node-label {
+  font-size: 12px;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 110px;
+}
+
+.patch-node-body {
+  padding: 6px 10px;
+  min-height: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.patch-node-caption {
+  font-family: ui-monospace, Menlo, monospace;
+  color: var(--fg-muted);
+  font-size: 10px;
+  word-break: break-all;
+}
+
+.patch-node-live {
+  font-family: ui-monospace, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+.patch-node-source {
+  border-left: 3px solid var(--accent);
+}
+
+.patch-node-transform {
+  border-left: 3px solid #a78bfa;
+}
+
+.patch-node-output {
+  border-left: 3px solid var(--ok);
+}
+
+.patch-node-debug {
+  border-left: 3px solid var(--warn);
+}
+
+.react-flow__handle {
+  width: 10px !important;
+  height: 10px !important;
+  background: var(--bg-panel-2) !important;
+  border: 2px solid var(--accent) !important;
+}
+
+.react-flow__handle.handle-bool {
+  border-color: var(--ok) !important;
+}
+
+.react-flow__handle.handle-any {
+  border-color: var(--fg-muted) !important;
+}
+
+.react-flow__edge-path {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.react-flow__background {
+  background: var(--bg);
+}
+
+.react-flow__controls,
+.react-flow__minimap {
+  background: var(--bg-panel-2) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.react-flow__controls button {
+  background: var(--bg-panel) !important;
+  color: var(--fg) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.react-flow__minimap-mask {
+  fill: rgba(0, 0, 0, 0.6);
+}
